@@ -28,5 +28,4 @@ Nivå 4:
 implementera gränssnitt för databasen och dess stored procedures:
     - klura på integreringen mellan filerna (imports osv...)
     - implementera integreringen mellan filerna (imports osv...)
-
-    //OBS!!!! -> FIXA GIT-REPO!!!!
+    - borde fixa digitala eerdiagram och schema skissar
