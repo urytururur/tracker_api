@@ -8,7 +8,7 @@ const cookieParser = require("cookie-parser");
 const app = express()
 const port = 5000
 
-//middleware functions
+//middleware
 app.use(express.json())
 app.use(cookieParser());
 
@@ -37,16 +37,11 @@ function authenticateToken(req, res, next) {
   })
 }
 
-let refreshTokens = [];
-
-app.post('/refreshToken', authenticateToken, (req, res) => {
+//routes
+app.post('/refreshToken', (req, res) => {
 
   if (!req.cookies.refreshtoken) {
     return res.sendStatus(401);
-  }
-
-  if (!refreshTokens.includes(req.cookies.refreshtoken)) {
-      return res.sendStatus(403);
   }
 
   jwt.verify(req.cookies.refreshtoken, process.env.SHA256_REFRESHTOKEN_KEY, (err, user) => {
@@ -54,25 +49,34 @@ app.post('/refreshToken', authenticateToken, (req, res) => {
           return res.sendStatus(403);
       }
 
-      jwt.sign({email: user.email}, process.env.SHA256_TOKEN_KEY, {
-        algorithm: 'HS256',
-        expiresIn: '20m'
-      }, (err, token) => {
-
-        res.cookie("token", token, {
-          //secure: process.env.NODE_ENV !== "development",
-          httpOnly: true,
-          maxAge:  20 * TIME_PERIODS.MINUTE
-        });
-
-        res.json({
-          message: "Successfully refreshed token."
-        });
-      });
+      dbFacade.validUserCredentials(user.email, user.password)
+        .then((response) => {
+          if(response.returnValue)
+          {
+            jwt.sign({email: user.email}, process.env.SHA256_TOKEN_KEY, {
+              algorithm: 'HS256',
+              expiresIn: '15m'
+            }, (err, token) => {
+      
+              res.cookie("token", token, {
+                //secure: process.env.NODE_ENV !== "development",
+                httpOnly: true,
+                maxAge:  15 * TIME_PERIODS.MINUTE
+              });
+      
+              res.json({
+                message: "Successfully refreshed token."
+              });
+            });
+          }
+          else
+          {
+            return res.sendStatus(403);
+          }
+        })
   });
 });
 
-//routes
 app.post('/signup', (req, res) => {
   dbFacade.userExists(req.body.email)
     .then((response) => {
@@ -107,30 +111,26 @@ app.post('/login', (req, res) => {
     }
     else
     {
-      const userData = { //to be stored in jwt token
-        email: req.body.email,
-      };
-
-      jwt.sign(userData, process.env.SHA256_TOKEN_KEY, {
+      jwt.sign({email: req.body.email}, process.env.SHA256_TOKEN_KEY, {
         algorithm: 'HS256',
-        expiresIn: '20m'
+        expiresIn: '15m'
       }, (err, token) => {
 
         res.cookie("token", token, {
           //secure: process.env.NODE_ENV !== "development",
           httpOnly: true,
-          maxAge:  20 * TIME_PERIODS.MINUTE
+          maxAge:  15 * TIME_PERIODS.MINUTE
         });
 
-        jwt.sign(userData, process.env.SHA256_REFRESHTOKEN_KEY, {
+        jwt.sign({email: req.body.email, password: req.body.password}, process.env.SHA256_REFRESHTOKEN_KEY, {
           algorithm: 'HS256',
+          expiresIn: '7d'
         }, (err, refreshtoken) => {
-
-          refreshTokens.push(refreshtoken);
 
           res.cookie("refreshtoken", refreshtoken, {
             //secure: process.env.NODE_ENV !== "development",
-            httpOnly: true
+            httpOnly: true,
+            maxAge:  1 * TIME_PERIODS.WEEK
           });
 
           res.status(200)
@@ -142,13 +142,9 @@ app.post('/login', (req, res) => {
 })
 
 app.post('/logout', authenticateToken, (req, res) => {
-  console.log(req.user);
-  //TODO:
-  //ta bort den säkra cookien med jwt:n från clienten
-  //avregistrera jwt:n
   res.clearCookie('token');
   res.clearCookie('refreshtoken');
-  res.send("Successfully signed out.")
+  res.json({message: "Successfully signed out."})
 })
 
 app.post('/deleteAccount', authenticateToken, (req, res) => {
