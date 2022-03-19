@@ -1,0 +1,20 @@
+{
+  "name": "tracker_api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "nodemon ./server/authServers/userAuthServer.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Torbjörn Ekstedt",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.3",
+    "mysql": "^2.18.1",
+    "nodemon": "^2.0.15"
+  }
+}
