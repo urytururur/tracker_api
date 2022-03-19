@@ -29,5 +29,3 @@ implementera gränssnitt för databasen och dess stored procedures:
     - klura på integreringen mellan filerna (imports osv...)
     - implementera integreringen mellan filerna (imports osv...)
     - borde fixa digitala eerdiagram och schema skissar
-    - lägg till table för refreshtokens i databasen
-    - hur expiras refresh tokensen?
