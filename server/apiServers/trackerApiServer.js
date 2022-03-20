@@ -7,24 +7,36 @@ module.exports = function(app)
           req.body.serialNumber,
           req.body.hashedPhysicalSecurityKey)
             .then((response) => {
-                if(response.returnValue)
+                if(response.err) return res.status(500)
+                if(response.data)
                 {
-                dbFacade.toggleTrackerActive(
-                    req.body.serialNumber,
-                    req.body.hashedPhysicalSecurityKey
-                    )
+                    dbFacade.getToggleRequest(req.body.serialNumber)
                     .then((response) => {
-                    if(response.success)
-                    {
-                        res.status(200)
-                        res.json(`Attemt to toggle tracker has been made`)
-                    }
+                        if(response.err) return res.status(500)
+
+                        if(response.data == undefined)
+                        {
+                            res.status(400)
+                            return res.json({message: "No activation request."})
+                        }
+
+                        dbFacade.toggleTrackerActive(
+                            req.body.serialNumber,
+                            req.body.hashedPhysicalSecurityKey,
+                            response.data.userEmail
+                            )
+                            .then((response) => {
+                                if(response.err) return res.status(500)
+
+                                res.status(200)
+                                return res.json(`Attemt to toggle tracker has been made`)
+                            })
                     })
                 }
                 else
                 {
-                res.status(400)
-                res.json({message: `Invalid tracker credentials.`})
+                    res.status(400)
+                    return res.json({message: `Invalid tracker credentials.`})
                 }
             })
         })

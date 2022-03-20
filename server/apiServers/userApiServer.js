@@ -6,20 +6,23 @@ module.exports = function(app)
   app.post('/createToggleActivationRequest', authMiddleware.authenticateToken, (req, res) => {
     dbFacade.validToggleActivationRequest(
       req.body.serialNumber,
-      req.body.hashedPhysicalSecurityKey,
       req.user.email)
         .then((response) => {
-          if(response.returnValue)
+          if(response.err) return res.status(500)
+          if(response.data)
           {
             dbFacade.toggleActivationRequestExists(req.body.serialNumber)
               .then((response) => {
-                if(!response.returnValue)
+                if(response.err) return res.status(500)
+                if(!response.data)
                 {
                   dbFacade.createToggleActivationRequest(
                     req.body.serialNumber,
                     req.user.email
                   )
                   .then((response) => {
+                    if(response.err) return res.status(500)
+                    
                     //ta bort requesten efter 10 sec
                     setTimeout(() => {
                       dbFacade.deleteToggleActivationRequest(req.body.serialNumber)

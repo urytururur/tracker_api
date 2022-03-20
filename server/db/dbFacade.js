@@ -30,138 +30,169 @@ function disconnect()
 }
 
 //stored procedures
-function signUpUser(email, hashedPassword, salt)
+function signUpUser(email, hashedPassword)
 {
-    return queryProcedure(
-        `call signUpUser('${email}', '${hashedPassword}', '${salt}')`,
-        `stored procedure "signUpUser" succeded.`,
-        `stored procedure "signUpUser" failed.`
-    )
+    const queryString = `call signUpUser('${email}', '${hashedPassword}')`;
+
+    return new Promise((resolve, reject) => {
+        connection.query(queryString, (err, rows, fields) => {
+            if(err) console.log(err)
+            resolve({
+                err: err,
+                data: {}
+            });
+        })
+    })
 }
 
 function deleteAccount(email)
 {
-    return queryProcedure(
-        `call deleteAccount('${email}')`,
-        `stored procedure "deleteAccount" succeded.`,
-        `stored procedure "deleteAccount" failed.`
-    )
+    const queryString = `call deleteAccount('${email}')`;
+
+    return new Promise((resolve, reject) => {
+        connection.query(queryString, (err, rows, fields) => {
+            if(err) console.log(err)
+            resolve({
+                err: err,
+                data: {}
+            });
+        })
+    })
 }
 
 function createToggleActivationRequest(serialNumber, email)
 {
-    return queryProcedure(
-        `call createToggleActivationRequest('${serialNumber}', '${email}')`,
-        `stored procedure "createToggleActivationRequest" succeded.`,
-        `stored procedure "createToggleActivationRequest" failed.`
-    )
+    const queryString = `call createToggleActivationRequest('${serialNumber}', '${email}')`;
+
+    return new Promise((resolve, reject) => {
+        connection.query(queryString, (err, rows, fields) => {
+            if(err) console.log(err)
+            resolve({
+                err: err,
+                data: {}
+            });
+        })
+    })
 }
 
 function deleteToggleActivationRequest(serialNumber)
 {
-    return queryProcedure(
-        `call deleteToggleActivationRequest('${serialNumber}')`,
-        `stored procedure "deleteToggleActivationRequest" succeded.`,
-        `stored procedure "deleteToggleActivationRequest" failed.`
-    )
+    const queryString = `call deleteToggleActivationRequest('${serialNumber}')`;
+
+    return new Promise((resolve, reject) => {
+        connection.query(queryString, (err, rows, fields) => {
+            if(err) console.log(err)
+            resolve({
+                err: err,
+                data: {}
+            });
+        })
+    })
 }
 
-function toggleTrackerActive(serialNumber, hashedPhysicalSecurityKey)
+function toggleTrackerActive(serialNumber, hashedPhysicalSecurityKey, email)
 {
-    return queryProcedure(
-        `call toggleTrackerActive('${serialNumber}', '${hashedPhysicalSecurityKey}')`,
-        `stored procedure "toggleTrackerActive" succeded.`,
-        `stored procedure "toggleTrackerActive" failed.`
-    )
+    const queryString = `call toggleTrackerActive('${serialNumber}', '${hashedPhysicalSecurityKey}', '${email}')`;
+
+    return new Promise((resolve, reject) => {
+        connection.query(queryString, (err, rows, fields) => {
+            if(err) console.log(err)
+            resolve({
+                err: err,
+                data: {}
+            });
+        })
+    })
 }
 
 //database functions
 function userExists(email)
 {
-    return queryFunction(
-        `select userExists('${email}')`,
-        `database function "userExists" succeded.`,
-        `database function "userExists" failed.`
-    )
-}
+    const queryString = `select userExists('${email}') as 'returnValue';`;
 
-function validUserCredentials(email, hashedPassword)
-{
-    return queryFunction(
-        `select validCredentials('${email}', '${hashedPassword}')`,
-        `database function "validCredentials" succeded.`,
-        `database function "validCredentials" failed.`
-    )
+    return new Promise((resolve, reject) => {
+        connection.query(queryString, (err, rows, fields) => {
+            if(err) console.log(err)
+            resolve({
+                err: err,
+                data: rows[0].returnValue
+            });
+        })
+    })
 }
 
 function validTrackerCredentials(serialNumber, hashedPhysicalSecurityKey)
 {
-    return queryFunction(
-        `select validTrackerCredentials('${serialNumber}', '${hashedPhysicalSecurityKey}')`,
-        `database function "validTrackerCredentials" succeded.`,
-        `database function "validTrackerCredentials" failed.`
-    )
+    const queryString = `select validTrackerCredentials('${serialNumber}', '${hashedPhysicalSecurityKey}') as 'returnValue';`;
+
+    return new Promise((resolve, reject) => {
+        connection.query(queryString, (err, rows, fields) => {
+            if(err) console.log(err)
+            resolve({
+                err: err,
+                data: rows[0].returnValue
+            });
+        })
+    })
 }
 
-function validToggleActivationRequest(serialNumber, hashedPhysicalSecurityKey, email)
+function validToggleActivationRequest(serialNumber, email)
 {
-    return queryFunction(
-        `select validToggleActivationRequest('${serialNumber}', '${hashedPhysicalSecurityKey}', '${email}')`,
-        `database function "validToggleActivationRequest" succeded.`,
-        `database function "validToggleActivationRequest" failed.`
-    )
+    const queryString = `select validToggleActivationRequest('${serialNumber}', '${email}') as 'returnValue';`;
+
+    return new Promise((resolve, reject) => {
+        connection.query(queryString, (err, rows, fields) => {
+            if(err) console.log(err)
+            resolve({
+                err: err,
+                data: rows[0].returnValue
+            });
+        })
+    })
 }
 
 function toggleActivationRequestExists(serialNumber)
 {
-    return queryFunction(
-        `select toggleActivationRequestExists('${serialNumber}')`,
-        `database function "toggleActivationRequestExists" succeded.`,
-        `database function "toggleActivationRequestExists" failed.`
-    )
-}
+    const queryString = `select toggleActivationRequestExists('${serialNumber}') as 'returnValue';`;
 
-//"private" helper functions
-function queryProcedure(queryString, onSuccessMessage, onFailiureMessage)
-{
-    return new Promise(async function(resolve, reject) {
-        await connection.query(queryString,
-            (err, rows, fields) => {
-                if(err)
-                {
-                    console.log(err)
-                }
-                else
-                {
-                    console.log(onSuccessMessage)
-                    resolve({
-                        success: true
-                    });
-                }
-            }
-        )
+    return new Promise((resolve, reject) => {
+        connection.query(queryString, (err, rows, fields) => {
+            if(err) console.log(err)
+            resolve({
+                err: err,
+                data: rows[0].returnValue
+            });
+        })
     })
 }
 
-function queryFunction(queryString, onSuccessMessage, onFailiureMessage)
+function getToggleRequest(serialNumber)
 {
-    return new Promise(async function(resolve, reject) {
-        await connection.query(`${queryString} as queryResponse`,
-            (err, rows, fields) => {
-                if(err)
-                {
-                    console.log(err)
-                }
-                else
-                {
-                    console.log(onSuccessMessage)
-                    resolve({
-                        success: true,
-                        returnValue: rows[0].queryResponse
-                    });
-                }
-            }
-        )
+    const queryString = `select * from ToggleActivationRequest where trackerSerialNumber = ${serialNumber};`;
+
+    return new Promise((resolve, reject) => {
+        connection.query(queryString, (err, rows, fields) => {
+            if(err) console.log(err)
+            resolve({
+                err: err,
+                data: rows[0]
+            });
+        })
+    })
+}
+
+function getUser(email)
+{ 
+    const queryString = `select * from User where email = '${email}';`;
+
+    return new Promise((resolve, reject) => {
+        connection.query(queryString, (err, rows, fields) => {
+            if(err) console.log(err)
+            resolve({
+                err: err,
+                data: rows[0]
+            });
+        })
     })
 }
 
@@ -176,10 +207,13 @@ module.exports = {
 
     //database functions
     userExists: userExists,
-    validUserCredentials: validUserCredentials,
     validTrackerCredentials: validTrackerCredentials,
     validToggleActivationRequest: validToggleActivationRequest,
     toggleActivationRequestExists: toggleActivationRequestExists,
+
+    //queries
+    getToggleRequest: getToggleRequest,
+    getUser: getUser,
 
     //övrigt
     connect: connect,

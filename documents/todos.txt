@@ -2,30 +2,12 @@
 
 Nivå 0:
 
-- UTVECKLA INLOGGNINSSYSTEM (Athorization inloggning integration mot databasen + jwt kanske??)
 - se devices:ens positioner i realtid (sockets)
 - https (för både webbsida och kommunikationenen mellan trackerserna och servern)
 - frontend (börja med enkel sida i vanlig html, css och js)
 - validation innan du kör databasfunctioner
+- borde fixa digitala eerdiagram och schema skissar
 
 Nivå 1:
-
-UTVECKLA INLOGGNINSSYSTEM (Athorization inloggning integration mot databasen + jwt kanske??):
-    - implementera grundinloggning
-    - implementera jwt (när användaren loggat in så ska jwt ta över)
-
-Nivå 2:
-implementera grundinloggning:
-    - användaren ska kunna logga in med email och lösenord
-    - lösenorden ska hashas
-
-Nivå 3:
-användaren ska kunna logga in med email och lösenord:
-    - implementera gränssnitt för databasen och dess stored procedures
-    - implementera logiken för inloggning
-
-Nivå 4:
-implementera gränssnitt för databasen och dess stored procedures:
-    - klura på integreringen mellan filerna (imports osv...)
-    - implementera integreringen mellan filerna (imports osv...)
-    - borde fixa digitala eerdiagram och schema skissar
+frontend (börja med enkel sida i vanlig html, css och js):
+    - ..............BM

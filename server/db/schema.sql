@@ -17,16 +17,17 @@ drop function if exists validUserCredentials;
 drop function if exists validTrackerCredentials;
 drop function if exists validToggleActivationRequest;
 drop function if exists toggleActivationRequestExists;
+drop function if exists trackerExists;
 
-create table User(email varchar(255), hashedPassword varchar(1023) not null, salt varchar(10) not null, primary key(email));
+create table User(email varchar(255), hashedPassword varchar(1023) not null, primary key(email));
 create table Tracker(serialNumber int auto_increment, hashedPhysicalSecurityKey varchar(1023) not null, userEmail varchar(255), active boolean not null default false, primary key(serialNumber), foreign key(userEmail) references User(email));
 create table ToggleActivationRequest(trackerSerialNumber int, userEmail varchar(255) not null, primary key(trackerSerialNumber), foreign key(trackerSerialNumber) references Tracker(serialNumber), foreign key(userEmail) references User(email));
 
 -- procedures
 delimiter //
-create procedure signUpUser(in p_email varchar(255), in p_hashedPassword varchar(1023), in p_salt varchar(10))
+create procedure signUpUser(in p_email varchar(255), in p_hashedPassword varchar(1023))
 BEGIN
-    insert into User(email, hashedPassword, salt) values(p_email, p_hashedPassword, p_salt);
+    insert into User(email, hashedPassword) values(p_email, p_hashedPassword);
 END //
 delimiter ;
 
@@ -72,12 +73,10 @@ END //
 delimiter ;
 
 delimiter //
-create procedure toggleTrackerActive(in p_serialNumber varchar(32), in p_hashedPhysicalSecurityKey varchar(1023))
+create procedure toggleTrackerActive(in p_serialNumber varchar(32), in p_hashedPhysicalSecurityKey varchar(1023), in p_email varchar(255))
 BEGIN
     update Tracker
-    set userEmail = if(Tracker.active, null, (
-        select userEmail from ToggleActivationRequest where trackerSerialNumber = p_serialNumber
-    )),
+    set userEmail = if(Tracker.active, null, p_email),
     active = not Tracker.active
     where serialNumber = p_serialNumber
     and hashedPhysicalSecurityKey = p_hashedPhysicalSecurityKey;
@@ -90,19 +89,6 @@ create function userExists(p_email varchar(255)) returns boolean
 BEGIN
     IF EXISTS (
         select * from User where email = p_email
-    )   THEN
-            return true;
-        ELSE
-            return false;
-    END IF;
-END//
-delimiter ;
-
-delimiter //
-create function validUserCredentials(p_email varchar(255), p_hashedPassword varchar(1023)) returns boolean
-BEGIN
-    IF EXISTS (
-        select * from User where email = p_email and hashedPassword = p_hashedPassword
     )   THEN
             return true;
         ELSE
@@ -125,10 +111,10 @@ END//
 delimiter ;
 
 delimiter //
-create function validToggleActivationRequest(p_serialNumber varchar(32), p_hashedPhysicalSecurityKey varchar(1023), p_email varchar(255)) returns boolean
+create function validToggleActivationRequest(p_serialNumber varchar(32), p_email varchar(255)) returns boolean
 BEGIN
     if(
-        (select validTrackerCredentials(p_serialNumber, p_hashedPhysicalSecurityKey)) and 
+        (select trackerExists(p_serialNumber)) and 
         (select userExists(p_email))
     )  THEN
             return true;
@@ -148,6 +134,19 @@ BEGIN
         ELSE
             return false;
     END IF;
+END//
+delimiter ;
+
+delimiter //
+create function trackerExists(p_serialNumber int) returns boolean
+BEGIN
+    if exists(
+        select * from Tracker where serialNumber = p_serialNumber
+    )   THEN
+            return true;
+        ELSE
+            return false;
+    end if;
 END//
 delimiter ;
 

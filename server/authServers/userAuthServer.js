@@ -3,6 +3,9 @@ var jwt = require('jsonwebtoken');
 const dbFacade = require('../db/dbFacade.js')
 const dotenv = require('dotenv');
 const authMiddleware = require('./middleware.js')
+const bcrypt = require("bcrypt");
+const { hash } = require('bcrypt');
+const res = require('express/lib/response');
 
 module.exports = function(app)
 {
@@ -10,76 +13,73 @@ module.exports = function(app)
   app.post('/refreshToken', (req, res) => {
 
     if (!req.cookies.refreshtoken) {
+      console.log(1)
       return res.sendStatus(401);
     }
 
     jwt.verify(req.cookies.refreshtoken, process.env.SHA256_REFRESHTOKEN_KEY, (err, user) => {
         if (err) {
+            console.log(2)
             return res.sendStatus(403);
         }
-
-        dbFacade.validUserCredentials(user.email, user.password)
-          .then((response) => {
-            if(response.returnValue)
-            {
-              jwt.sign({email: user.email}, process.env.SHA256_TOKEN_KEY, {
-                algorithm: 'HS256',
-                expiresIn: '15m'
-              }, (err, token) => {
-        
-                res.cookie("token", token, {
-                  //secure: process.env.NODE_ENV !== "development",
-                  httpOnly: true,
-                  maxAge:  15 * TIME_PERIODS.MINUTE
-                });
-        
-                res.json({
-                  message: "Successfully refreshed token."
-                });
+        validateUserCredentials(user.email, user.password, (match) => {
+          if(match)
+          {
+            jwt.sign({email: user.email}, process.env.SHA256_TOKEN_KEY, {
+              algorithm: 'HS256',
+              expiresIn: '15m'
+            }, (err, token) => {
+      
+              res.cookie("token", token, {
+                //secure: process.env.NODE_ENV !== "development",
+                httpOnly: true,
+                maxAge:  15 * TIME_PERIODS.MINUTE
               });
-            }
-            else
-            {
-              return res.sendStatus(403);
-            }
-          })
-    });
+      
+              return res.json({
+                message: "Successfully refreshed token."
+              });
+            });
+          }
+          else
+          {
+            return res.sendStatus(403);
+          }
+        })
+      })
   });
 
   app.post('/signup', (req, res) => {
     dbFacade.userExists(req.body.email)
       .then((response) => {
-        if(!response.returnValue)
+        if(!response.data)
         {
-          dbFacade.signUpUser(req.body.email, req.body.password, '123456') //fixa random salt
+          hashPassword(req.body.password, (err, hashedPassword) => {
+            dbFacade.signUpUser(req.body.email, hashedPassword)
             .then((response) => {
-              if(response.success)
-              {
-                res.status(200);
-                res.json({message: `Signed up successfully.`})
-              }
+              if(response.err) return res.status(500)
+
+              res.status(200);
+              return res.json({message: `Signed up successfully.`})
             })
+          })
         }
         else
         {
           res.status(400);
-          res.json({message: 'User already exists.'});
+          return res.json({message: 'User already exists.'});
         }
       })
   })
 
   app.post('/login', (req, res) => {
-    //TODO:
-    //validatea email och password mot databasen
-    dbFacade.validUserCredentials(req.body.email, req.body.password)
-    .then((response) => {
-      if(!response.returnValue)
-      {
-        res.status(401)
-        res.json({message: "Wrong email or password."})
-      }
-      else
-      {
+      validateUserCredentials(req.body.email, req.body.password, (match) => {
+        if(!match)
+        {
+          res.status(401)
+          return res.json({message: "Wrong email or password."})
+        }
+
         jwt.sign({email: req.body.email}, process.env.SHA256_TOKEN_KEY, {
           algorithm: 'HS256',
           expiresIn: '15m'
@@ -103,41 +103,73 @@ module.exports = function(app)
             });
 
             res.status(200)
-            res.json({message: "Logged in successfully."})
+            return res.json({message: "Logged in successfully."})
           });
         });
-      }
-    })
+      })
   })
 
   app.post('/logout', authMiddleware.authenticateToken, (req, res) => {
     res.clearCookie('token');
     res.clearCookie('refreshtoken');
-    res.json({message: "Successfully signed out."})
+    return res.json({message: "Successfully signed out."})
   })
 
   app.post('/deleteAccount', authMiddleware.authenticateToken, (req, res) => {
 
-    dbFacade.validUserCredentials(req.user.email, req.body.password)
-      .then((response) => {
-        if(response.returnValue)
+    validateUserCredentials(req.user.email, req.body.password, (match) => {
+      if(match)
         {
           dbFacade.deleteAccount(req.user.email)
             .then((response) => {
-              if(response.success)
-              {
-                res.clearCookie('token');
-                res.clearCookie('refreshtoken');
-                res.status(200)
-                res.json({message: `Account deleted successfully.`})
-              }
+              if(response.err) return res.status(500)
+
+              res.clearCookie('token');
+              res.clearCookie('refreshtoken');
+              res.status(200)
+              return res.json({message: `Account deleted successfully.`})
             })
         }
         else
         {
           res.status(400)
-          res.json({message: `Wrong email or password.`})
+          return res.json({message: `Wrong password.`})
         } 
       })
+    })
+
+}
+
+//helper functions
+function hashPassword(password,/* salt,*/ callback)
+{
+  bcrypt.genSalt(10, function(err, salt) {
+    bcrypt.hash(password, salt, function(err, hash) {
+        // Store hash in your password DB.
+        console.log(`hashedPassword: ${hash}`);
+        
+        callback(err, hash)
+    });
+  });
+}
+
+function validateUserCredentials(email, password, callback)
+{
+  console.log(email)
+  console.log(password)
+
+  dbFacade.getUser(email)
+  .then((response) => {
+    if(response.err) return res.status(500)
+
+    if(response.data == undefined)
+    {
+      callback(false)
+      return;
+    }
+
+    bcrypt.compare(password, response.data.hashedPassword, (err, match) => {
+        callback(match);
+    })
   })
 }
