@@ -9,7 +9,17 @@ const res = require('express/lib/response');
 
 module.exports = function(app)
 {
-  //routes
+  app.get('/isSignedIn', (req, res) => {
+    if(!req.cookies.token)
+    {
+      return res.json(false)
+    }
+    else
+    {
+      return res.json(true)
+    }
+  });
+
   app.post('/refreshToken', (req, res) => {
 
     if (!req.cookies.refreshtoken) {

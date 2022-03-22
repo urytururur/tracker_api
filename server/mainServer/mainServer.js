@@ -2,6 +2,7 @@ const express = require('express')
 const dbFacade = require('../db/dbFacade.js')
 const cookieParser = require("cookie-parser");
 const dotenv = require('dotenv');
+const path = require('path')
 
 const app = express()
 const port = 5000
@@ -14,6 +15,7 @@ app.use(cookieParser());
 require('../authServers/userAuthServer.js')(app)
 require('../apiServers/userApiServer.js')(app)
 require('../apiServers/trackerApiServer.js')(app)
+require('../pagesServer/pagesServer.js')(app, express)
 
 //initialization functions
 dbFacade.connect().then((response) => {

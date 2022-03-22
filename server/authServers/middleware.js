@@ -1,4 +1,6 @@
+const { redirect } = require('express/lib/response');
 var jwt = require('jsonwebtoken');
+const path = require('path')
 
 //middleware
 function authenticateToken(req, res, next)

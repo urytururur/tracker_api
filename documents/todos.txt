@@ -7,6 +7,7 @@ Nivå 0:
 - frontend (börja med enkel sida i vanlig html, css och js)
 - validation innan du kör databasfunctioner
 - borde fixa digitala eerdiagram och schema skissar
+- fixa refresh tokens expiration date och att de inte sparar lösen
 
 Nivå 1:
 frontend (börja med enkel sida i vanlig html, css och js):

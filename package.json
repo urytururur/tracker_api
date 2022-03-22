@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "nodemon ./server/mainServer/mainServer.js",
+    "start": "npm --prefix ./client run build && nodemon ./server/mainServer/mainServer.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Torbjörn Ekstedt",
