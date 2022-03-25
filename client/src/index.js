@@ -14,9 +14,7 @@ import App from './App';
 ReactDOM.render(
   <BrowserRouter>
     <React.StrictMode>
-      <Routes>
-        <Route path="*" element={<App/>}/>
-      </Routes>
+      <App/>
     </React.StrictMode>
   </BrowserRouter>,
   document.getElementById('root')

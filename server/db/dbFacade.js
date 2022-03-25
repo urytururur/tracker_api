@@ -10,22 +10,26 @@ const connection = mysql.createConnection({
 function connect()
 {
     return new Promise(async function(resolve, reject) {
-        await connection.connect();
-        console.log("database connected.")
-        resolve({
-            success: true
-        });
+        try {
+            await connection.connect();
+            resolve();
+        } catch (err) {
+            console.log(err)
+            reject()    
+        }
     })
 }
 
 function disconnect()
 {
     return new Promise(async function(resolve, reject) {
-        await connection.end();
-        console.log("database disconnected.")
-        resolve({
-            success: true
-        });
+        try {
+            await connection.end();
+            resolve();
+        } catch (err) {
+            console.log(err)
+            reject()
+        }
     })
 }
 
@@ -36,11 +40,12 @@ function signUpUser(email, hashedPassword)
 
     return new Promise((resolve, reject) => {
         connection.query(queryString, (err, rows, fields) => {
-            if(err) console.log(err)
-            resolve({
-                err: err,
-                data: {}
-            });
+            if(err)
+            {
+                console.log(err)
+                reject()
+            }
+            resolve();
         })
     })
 }
@@ -51,11 +56,12 @@ function deleteAccount(email)
 
     return new Promise((resolve, reject) => {
         connection.query(queryString, (err, rows, fields) => {
-            if(err) console.log(err)
-            resolve({
-                err: err,
-                data: {}
-            });
+            if(err)
+            {
+                console.log(err)
+                reject()
+            }
+            resolve();
         })
     })
 }
@@ -66,11 +72,12 @@ function createToggleActivationRequest(serialNumber, email)
 
     return new Promise((resolve, reject) => {
         connection.query(queryString, (err, rows, fields) => {
-            if(err) console.log(err)
-            resolve({
-                err: err,
-                data: {}
-            });
+            if(err)
+            {
+                console.log(err)
+                reject()
+            }
+            resolve();
         })
     })
 }
@@ -81,11 +88,12 @@ function deleteToggleActivationRequest(serialNumber)
 
     return new Promise((resolve, reject) => {
         connection.query(queryString, (err, rows, fields) => {
-            if(err) console.log(err)
-            resolve({
-                err: err,
-                data: {}
-            });
+            if(err)
+            {
+                console.log(err)
+                reject()
+            }
+            resolve();
         })
     })
 }
@@ -96,11 +104,12 @@ function toggleTrackerActive(serialNumber, hashedPhysicalSecurityKey, email)
 
     return new Promise((resolve, reject) => {
         connection.query(queryString, (err, rows, fields) => {
-            if(err) console.log(err)
-            resolve({
-                err: err,
-                data: {}
-            });
+            if(err)
+            {
+                console.log(err)
+                reject()
+            }
+            resolve();
         })
     })
 }
@@ -112,11 +121,12 @@ function userExists(email)
 
     return new Promise((resolve, reject) => {
         connection.query(queryString, (err, rows, fields) => {
-            if(err) console.log(err)
-            resolve({
-                err: err,
-                data: rows[0].returnValue
-            });
+            if(err)
+            {
+                console.log(err)
+                reject()
+            }
+            resolve();
         })
     })
 }
@@ -127,11 +137,12 @@ function validTrackerCredentials(serialNumber, hashedPhysicalSecurityKey)
 
     return new Promise((resolve, reject) => {
         connection.query(queryString, (err, rows, fields) => {
-            if(err) console.log(err)
-            resolve({
-                err: err,
-                data: rows[0].returnValue
-            });
+            if(err)
+            {
+                console.log(err)
+                reject()
+            }
+            resolve();
         })
     })
 }
@@ -142,11 +153,12 @@ function validToggleActivationRequest(serialNumber, email)
 
     return new Promise((resolve, reject) => {
         connection.query(queryString, (err, rows, fields) => {
-            if(err) console.log(err)
-            resolve({
-                err: err,
-                data: rows[0].returnValue
-            });
+            if(err)
+            {
+                console.log(err)
+                reject()
+            }
+            resolve();
         })
     })
 }
@@ -157,11 +169,12 @@ function toggleActivationRequestExists(serialNumber)
 
     return new Promise((resolve, reject) => {
         connection.query(queryString, (err, rows, fields) => {
-            if(err) console.log(err)
-            resolve({
-                err: err,
-                data: rows[0].returnValue
-            });
+            if(err)
+            {
+                console.log(err)
+                reject()
+            }
+            resolve();
         })
     })
 }
@@ -172,11 +185,12 @@ function getToggleRequest(serialNumber)
 
     return new Promise((resolve, reject) => {
         connection.query(queryString, (err, rows, fields) => {
-            if(err) console.log(err)
-            resolve({
-                err: err,
-                data: rows[0]
-            });
+            if(err)
+            {
+                console.log(err)
+                reject()
+            }
+            resolve();
         })
     })
 }
@@ -187,11 +201,38 @@ function getUser(email)
 
     return new Promise((resolve, reject) => {
         connection.query(queryString, (err, rows, fields) => {
-            if(err) console.log(err)
-            resolve({
-                err: err,
-                data: rows[0]
-            });
+            if(err)
+            {
+                console.log(err)
+                reject()
+            }
+            resolve(rows[0]);
+        })
+    })
+}
+
+function getAllUserTrackers(email)
+{ 
+    const queryString = `select * from Tracker where userEmail = '${email}';`;
+
+    return new Promise((resolve, reject) => {
+        connection.query(queryString, (err, rows, fields) => {
+            if(err)
+            {
+                console.log(err)
+                reject()
+            }
+
+            for(i = 0; i < rows.length; i++)
+            {
+                //delete properties
+                delete rows[0].hashedPhysicalSecurityKey
+                delete rows[0].userEmail
+
+                //add properties
+                rows[0].type = "Tracker"
+            }
+            resolve(rows);
         })
     })
 }
@@ -214,6 +255,7 @@ module.exports = {
     //queries
     getToggleRequest: getToggleRequest,
     getUser: getUser,
+    getAllUserTrackers: getAllUserTrackers,
 
     //övrigt
     connect: connect,

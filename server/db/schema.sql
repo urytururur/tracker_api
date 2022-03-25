@@ -20,7 +20,7 @@ drop function if exists toggleActivationRequestExists;
 drop function if exists trackerExists;
 
 create table User(email varchar(255), hashedPassword varchar(1023) not null, primary key(email));
-create table Tracker(serialNumber int auto_increment, hashedPhysicalSecurityKey varchar(1023) not null, userEmail varchar(255), active boolean not null default false, primary key(serialNumber), foreign key(userEmail) references User(email));
+create table Tracker(serialNumber int auto_increment, hashedPhysicalSecurityKey varchar(1023) not null, userEmail varchar(255), active boolean not null default false, nickname varchar(255) not null default '<name>', primary key(serialNumber), foreign key(userEmail) references User(email));
 create table ToggleActivationRequest(trackerSerialNumber int, userEmail varchar(255) not null, primary key(trackerSerialNumber), foreign key(trackerSerialNumber) references Tracker(serialNumber), foreign key(userEmail) references User(email));
 
 -- procedures

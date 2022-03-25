@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-class Home extends Component {
+class Template extends Component {
 
     constructor()
     {
@@ -17,10 +17,10 @@ class Home extends Component {
     render(){
         return(
             <div>
-                <h1>home</h1>
+                <h1>Template</h1>
             </div>
         );
     } 
-  }
+}
 
-export default Home;
+export default Template;

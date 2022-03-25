@@ -7,14 +7,16 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "npm --prefix ./client run build && nodemon ./server/mainServer/mainServer.js",
+    "start": "nodemon ./server/mainServer/mainServer.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Torbjörn Ekstedt",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.26.1",
     "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1",

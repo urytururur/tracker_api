@@ -2,42 +2,38 @@ const dbFacade = require('../db/dbFacade.js')
 
 module.exports = function(app)
 {
-    app.post('/toggleTrackerActiveButton', (req, res) => {
+    app.post('/api/toggleTrackerActiveButton', (req, res) => {
         dbFacade.validTrackerCredentials(
           req.body.serialNumber,
           req.body.hashedPhysicalSecurityKey)
             .then((response) => {
-                if(response.err) return res.status(500)
-                if(response.data)
-                {
-                    dbFacade.getToggleRequest(req.body.serialNumber)
+                dbFacade.getToggleRequest(req.body.serialNumber)
+                .then((response) => {
+                    dbFacade.toggleTrackerActive(
+                        req.body.serialNumber,
+                        req.body.hashedPhysicalSecurityKey,
+                        response.data.userEmail
+                    )
                     .then((response) => {
-                        if(response.err) return res.status(500)
-
-                        if(response.data == undefined)
-                        {
-                            res.status(400)
-                            return res.json({message: "No activation request."})
-                        }
-
-                        dbFacade.toggleTrackerActive(
-                            req.body.serialNumber,
-                            req.body.hashedPhysicalSecurityKey,
-                            response.data.userEmail
-                            )
-                            .then((response) => {
-                                if(response.err) return res.status(500)
-
-                                res.status(200)
-                                return res.json(`Attemt to toggle tracker has been made`)
-                            })
+                        res.status(204)
+                        return res.send()
+                    }).catch(err => {
+                        console.log(err)
+                        
+                        res.status(400)
+                        return res.send()
                     })
-                }
-                else
-                {
-                    res.status(400)
-                    return res.json({message: `Invalid tracker credentials.`})
-                }
+                }).catch(err => {
+                    console.log(err)
+
+                    res.status(404)
+                    return res.send()
+                })
+            }).catch(err => {
+                console.log(err)
+
+                res.status(401)
+                return res.send()
             })
         })
 }
