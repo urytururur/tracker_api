@@ -7,7 +7,8 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "npm --prefix ./client/ run build && nodemon ./server/mainServer/mainServer.js",
+    "prod": "npm --prefix ./client/ install && npm --prefix ./client/ run build && node ./server/mainServer/mainServer.js",
+    "start": "nodemon ./server/mainServer/mainServer.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Torbjörn Ekstedt",
